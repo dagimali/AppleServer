@@ -178,9 +178,9 @@ app.post("/add-product", function (req, res) {
 });
 app.get("/products", function (req, res) {
   let mysqlJson = `SELECT *
-FROM Products
+FROM products
 JOIN ProductDescription 
-JOIN productPrice ON Products.product_id = ProductDescription.product_id AND Products.product_id =productPrice.product_id`;
+JOIN productPrice ON products.product_id = ProductDescription.product_id AND products.product_id =productPrice.product_id`;
   DBconnection.query(mysqlJson, (err, rows, field) => {
     if (err) throw err;
     let DBJson = rows;
