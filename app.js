@@ -1,24 +1,27 @@
 /** @format */
 
-const express = require("express");
 const mySql = require("mysql2");
+require("dotenv").config();
+const express = require("express");
 const http = require("http");
 const { userInfo } = require("os");
 const path = require("path");
 const { throws } = require("assert");
 var cors = require("cors");
 let app = express();
-app.listen(2001, (req, res) => {
-  console.log("server listening");
+let port = process.env.port || 80;
+app.listen(port, (req, res) => {
+  console.log(`server listening to ${port}`);
 });
 app.use(cors());
-const DBconnection = mySql.createConnection({
-  host: "localhost",
-  user: "myDBuser",
-  password: "myDBuser",
-  database: "myDB",
-  socketPath: "/Applications/MAMP/tmp/mysql/mysql.sock",
-});
+const DBconnection = mySql.createConnection(process.env.DATABASE_URL);
+// console.log(process.env.user);
+console.log("connected to planetscale");
+// DBconnection.query("show tables", function (err, results, fields) {
+//   console.log(results); // results contains rows returned by server
+//   console.log(fields); // fields contains extra metadata about results, if available
+// });
+// DBconnection.end();
 // netstat -ln | grep mysql --path finder
 DBconnection.connect((err) => {
   if (err) {
@@ -42,14 +45,12 @@ app.get("/create_table", function (req, res) {
         product_brief_description TEXT not null, product_description TEXT not null,
         product_img varchar(255) not null,
         product_link varchar(255) not null,
-        PRIMARY KEY (description_id),
-        FOREIGN KEY (product_id) REFERENCES products(product_id))`;
+        PRIMARY KEY (description_id))`;
   let createproductPrice = `CREATE TABLE if not exists productPrice(price_id int auto_increment, 
         product_id int(11) not null,
         starting_price varchar(255) not null,
         price_range varchar(255) not null,
-        PRIMARY KEY (price_id),
-        FOREIGN KEY (product_id) REFERENCES products(product_id))`;
+        PRIMARY KEY (price_id))`;
   let createUser = `CREATE TABLE if not exists user(user_id int auto_increment, 
         user_name varchar(255),
         user_password varchar(255),
@@ -57,9 +58,7 @@ app.get("/create_table", function (req, res) {
   let createOrders = `CREATE TABLE if not exists Orders(order_id int auto_increment, 
         product_id int(11) not null,
         user_id int(11) not null,
-        PRIMARY KEY (order_id),
-        FOREIGN KEY (product_id) REFERENCES products(product_id),
-        FOREIGN KEY (user_id) REFERENCES user(user_id))`;
+        PRIMARY KEY (order_id))`;
   DBconnection.query(createProduct, (err, results, fields) => {
     if (err) {
       console.log(err);
@@ -107,7 +106,7 @@ app.post("/add-product", function (req, res) {
   //   console.log(productId);
   // insert into [table Name](columns) value()
 
-  let insertProduct = `INSERT INTO products (product_url, product_name) VALUE(' ${productUrl} ','${productName}')`;
+  let insertProduct = `INSERT INTO products (product_url, product_name) VALUES(' ${productUrl} ','${productName}')`;
 
   //
   // let insertPName=`INSERT INTO products () VALUE(?)`
@@ -129,7 +128,7 @@ app.post("/add-product", function (req, res) {
     // console.log(userId);
 
     if (productId != 0) {
-      let insertDecription = `INSERT INTO ProductDescription (product_id, product_brief_description, product_description, product_img, product_link) VALUE ('${productId}', ' ${pBrief}', ' ${pDescription}', ' ${pimg}', '${pLink}')`;
+      let insertDecription = `INSERT INTO ProductDescription (product_id, product_brief_description, product_description, product_img, product_link) VALUES ('${productId}', ' ${pBrief}', ' ${pDescription}', ' ${pimg}', '${pLink}')`;
       DBconnection.query(insertDecription, function (err, res) {
         if (err) throw err;
         console.log("second record inserted");
@@ -141,7 +140,7 @@ app.post("/add-product", function (req, res) {
 
       let startPrice = req.body.startingPrice;
       let priceRange = req.body.priceRange;
-      let insertPrice = `INSERT INTO productPrice(product_id, starting_price, price_range) VALUE ('${productId}', '${startPrice}', '${priceRange}')`;
+      let insertPrice = `INSERT INTO productPrice(product_id, starting_price, price_range) VALUES ('${productId}', '${startPrice}', '${priceRange}')`;
       DBconnection.query(insertPrice, function (err, res) {
         if (err) throw err;
         console.log("third record inserted");
@@ -152,7 +151,7 @@ app.post("/add-product", function (req, res) {
       if (userName == "") {
         console.log("no Value for user name");
       } else {
-        let insertUser = `INSERT INTO user(user_name, user_password) VALUE('${userName}', '${uPassword}')`;
+        let insertUser = `INSERT INTO user(user_name, user_password) VALUES('${userName}', '${uPassword}')`;
         DBconnection.query(insertUser, function (err, res) {
           if (err) throw err;
           // console.log(rows[rows.length-1].user_name)
@@ -163,7 +162,7 @@ app.post("/add-product", function (req, res) {
         DBconnection.query(selectUID, (error, rows, fields) => {
           let userId = rows[rows.length - 1].user_id;
 
-          let insertOrder = `INSERT INTO Orders(product_id, user_id) VALUE('${productId}','${userId}' )`;
+          let insertOrder = `INSERT INTO Orders(product_id, user_id) VALUES('${productId}','${userId}' )`;
 
           DBconnection.query(insertOrder, function (err, res) {
             if (err) throw err;
