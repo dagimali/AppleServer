@@ -9,7 +9,7 @@ const path = require("path");
 const { throws } = require("assert");
 var cors = require("cors");
 let app = express();
-let port = process.env.port || 80;
+let port = process.env.PORT || 80;
 app.listen(port, (req, res) => {
   console.log(`server listening to ${port}`);
 });
