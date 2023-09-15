@@ -9,8 +9,8 @@ const path = require("path");
 const { throws } = require("assert");
 var cors = require("cors");
 let app = express();
-let port = process.env.PORT || 80;
-app.listen(port, (req, res) => {
+let port = process.env.PORT || 8080;
+app.listen(port, "0.0.0.0", (req, res) => {
   console.log(`server listening to ${port}`);
 });
 app.use(cors());
